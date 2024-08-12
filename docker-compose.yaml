@@ -1,0 +1,14 @@
+version: '3.9'
+services:
+  bynder-lottery-service:
+    image: bynder-lottery-via:0.1.0-SNAPSHOT
+  bynder-lottery-db:
+    container_name: bynder-lottery-postgres
+    image: postgres:14.5
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: titkos
+    ports:
+      - "25432:5432"
+    volumes:
+      - ./src/main/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
