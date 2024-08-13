@@ -3,14 +3,15 @@ import fs2.Stream
 import org.http4s.blaze.server.BlazeServerBuilder
 import route.{LotteryRoutes, ParticipantRoutes}
 import cats.implicits.*
+import config.SqlServerConfig
 import repository.ParticipantRepository
 import service.ParticipantService
 
 object Server {
-  val serverStream: Stream[IO, Nothing] = {
+  def serverStream(config: SqlServerConfig): Stream[IO, Nothing] = {
     import org.http4s.implicits.*
 
-    val participantRepository = ParticipantRepository.apply
+    val participantRepository = ParticipantRepository(config)
     val participantService    = ParticipantService(participantRepository)
     val routes                =
       (ParticipantRoutes.routes(participantService) <+> LotteryRoutes.routes).orNotFound
