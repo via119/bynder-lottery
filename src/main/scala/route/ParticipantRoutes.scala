@@ -1,16 +1,15 @@
 package route
 
 import cats.effect.IO
-import io.circe.derivation.ConfiguredDecoder
-import org.http4s.HttpRoutes
-import org.http4s.dsl.Http4sDsl
-import service.ParticipantService
 import io.circe.derivation.*
-import io.circe.derivation.Configuration
-import io.circe.{Decoder, Encoder}
 import io.circe.syntax.*
+import io.circe.{Decoder, Encoder}
+import org.http4s.HttpRoutes
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
+import org.http4s.dsl.Http4sDsl
+import service.ParticipantService
+import service.ServiceError.{UnexpectedError, ValidationError}
 
 object ParticipantRoutes {
   def routes(service: ParticipantService): HttpRoutes[IO] = {
@@ -20,10 +19,11 @@ object ParticipantRoutes {
       .of[IO] { case req @ POST -> Root / "user" =>
         for {
           request  <- req.as[RegisterParticipantRequest]
-          result   <- service.register(request)
+          result   <- service.register(request).handleError(e => Left(UnexpectedError("An unexpected error occurred: " + e.getMessage)))
           response <- result match
-                        case Left(value)  => BadRequest(value)
-                        case Right(value) => Ok(value.asJson)
+                        case Left(ValidationError(errorMessage)) => BadRequest(errorMessage)
+                        case Left(UnexpectedError(errorMessage)) => InternalServerError(errorMessage)
+                        case Right(value)                        => Ok(value.asJson)
         } yield response
       }
   }
