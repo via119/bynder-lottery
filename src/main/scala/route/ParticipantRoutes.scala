@@ -5,10 +5,9 @@ import io.circe.derivation.ConfiguredDecoder
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import service.ParticipantService
-import io.circe.Decoder.derivedConfigured
 import io.circe.derivation.*
 import io.circe.derivation.Configuration
-import io.circe.{Codec, Decoder, Encoder}
+import io.circe.{Decoder, Encoder}
 import io.circe.syntax.*
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
@@ -21,16 +20,23 @@ object ParticipantRoutes {
       .of[IO] { case req @ POST -> Root / "user" =>
         for {
           request  <- req.as[RegisterParticipantRequest]
-          // response <- service.register()
-          response <- Ok()
+          result   <- service.register(request)
+          response <- result match
+                        case Left(value)  => BadRequest(value)
+                        case Right(value) => Ok(value.asJson)
         } yield response
       }
   }
 
+  given Configuration = Configuration.default.withSnakeCaseMemberNames
+
   case class RegisterParticipantRequest(
-    id: Int,
-    first_name: String,
-    last_name: String,
+    firstName: String,
+    lastName: String,
     email: String,
-  ) derives Decoder
+  ) derives ConfiguredDecoder
+
+  case class RegisterParticipantResponse(
+    id: Int,
+  ) derives Encoder
 }
