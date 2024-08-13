@@ -1,13 +1,16 @@
 package service
 
-import domain.{Email, Participant}
+import domain.Participant
 import route.ParticipantRoutes.RegisterParticipantRequest
 import cats.data.Validated._
 import cats.data._
-import cats.data.Validated._
 import cats.syntax.all._
 
 object ParticipantValidator {
+
+  val invalidEmailErrorMessage     = "Invalid email address."
+  val invalidFirstNameErrorMessage = "First name cannot contain spaces, numbers or special characters."
+  val invalidLastNameErrorMessage  = "Last name cannot contain spaces, numbers or special characters."
 
   def validateEmail(email: String): ValidatedNel[String, String] = {
     val emailRegex = """^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"""
@@ -15,20 +18,20 @@ object ParticipantValidator {
     if (email.matches(emailRegex))
       email.validNel
     else
-      "Invalid email address.".invalidNel
+      invalidEmailErrorMessage.invalidNel
   }
 
   def validateFirstName(firstName: String): ValidatedNel[String, String] =
     if (firstName.matches("^[a-zA-Z]+$"))
       firstName.validNel
     else
-      "First name cannot contain spaces, numbers or special characters.".invalidNel
+      invalidFirstNameErrorMessage.invalidNel
 
   def validateLastName(lastName: String): ValidatedNel[String, String] =
     if (lastName.matches("^[a-zA-Z]+$"))
       lastName.validNel
     else
-      "Last name cannot contain spaces, numbers or special characters.".invalidNel
+      invalidLastNameErrorMessage.invalidNel
 
   def validateParticipant(registerParticipantRequest: RegisterParticipantRequest): ValidatedNel[String, Participant] = {
     (
