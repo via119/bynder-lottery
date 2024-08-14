@@ -7,7 +7,8 @@ lazy val root = (project in file("."))
   .settings(
     name                 := "bynder-lottery",
     Docker / packageName := "bynder-lottery-via",
-    libraryDependencies ++= Seq(doobie, doobiePostgres, pureconfigCats, pureconfigCatsEffect, scalaTest) ++ http4sDependencies ++ circeDependencies,
+    testFrameworks       += new TestFramework("weaver.framework.CatsEffect"),
+    libraryDependencies ++= Seq(doobie, doobiePostgres, pureconfigCats, pureconfigCatsEffect, scalaTest, weaver) ++ http4sDependencies ++ circeDependencies,
   )
 
 lazy val doobie               = "org.tpolecat"          %% "doobie-core"            % "1.0.0-RC2"
@@ -28,4 +29,5 @@ val circeDependencies = Seq(
   "io.circe" %% "circe-parser",
 ).map(_ % circeVersion)
 
-val scalaTest = "org.scalatest" %% "scalatest" % "3.2.19" % "test"
+val scalaTest = "org.scalatest"       %% "scalatest"   % "3.2.19" % "test"
+val weaver    = "com.disneystreaming" %% "weaver-cats" % "0.8.4"  % Test

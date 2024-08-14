@@ -34,7 +34,7 @@ object ParticipantRoutes {
     firstName: String,
     lastName: String,
     email: String,
-  ) derives ConfiguredDecoder
+  ) derives ConfiguredDecoder, ConfiguredEncoder
 
   case class RegisterParticipantResponse(
     id: Int,
