@@ -1,9 +1,9 @@
 package route
 
 import cats.effect.IO
+import io.circe.Decoder
 import io.circe.derivation.*
 import io.circe.syntax.*
-import io.circe.{Decoder, Encoder}
 import org.http4s.HttpRoutes
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
@@ -38,5 +38,5 @@ object ParticipantRoutes {
 
   case class RegisterParticipantResponse(
     id: Int,
-  ) derives Encoder
+  ) derives ConfiguredEncoder
 }
