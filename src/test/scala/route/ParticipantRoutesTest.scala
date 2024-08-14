@@ -30,7 +30,7 @@ object ParticipantRoutesTest extends SimpleIOSuite {
     } yield expect(status == Some(Status.Ok))
   }
 
-  test("should return BadRequest for malformed request") {
+  test("should return BadRequest for invalid request") {
     for {
       status <- ParticipantRoutes
                   .routes(new TestService(IO.pure(Left(ValidationError("error")))))
