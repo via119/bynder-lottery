@@ -21,11 +21,9 @@ CREATE TABLE entry (
 
 CREATE TABLE winner (
   id SERIAL PRIMARY KEY,
-  win_time TIMESTAMPTZ NOT NULL,
-  participant_id INT NOT NULL,
+  win_date DATE NOT NULL,
   lottery_id INT NOT NULL,
-  FOREIGN KEY (lottery_id) REFERENCES lottery(id),
-  FOREIGN KEY (participant_id) REFERENCES participant(id)
+  entry_id INT NOT NULL
 );
 
 INSERT INTO lottery (name) VALUES ('first and only lottery');

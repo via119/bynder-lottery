@@ -1,9 +1,6 @@
 package route
 
-import cats.effect.IO
-import io.circe.derivation.{ConfiguredDecoder, ConfiguredEncoder}
-import org.http4s.HttpRoutes
-import org.http4s.dsl.Http4sDsl
+import cats.data.EitherT
 import cats.effect.IO
 import io.circe.derivation.*
 import io.circe.syntax.*
@@ -21,7 +18,7 @@ object LotteryRoutes {
     import dsl.*
     HttpRoutes
       .of[IO] {
-        case req @ POST -> Root / "entry"            =>
+        case req @ POST -> Root / "entry"             =>
           for {
             request  <- req.as[EntryRequest]
             result   <- service.submitEntry(request).handleError(e => Left(UnexpectedError("An unexpected error occurred: " + e.getMessage)))
@@ -30,9 +27,12 @@ object LotteryRoutes {
                           case Left(UnexpectedError(errorMessage)) => InternalServerError(errorMessage)
                           case Right(value)                        => Ok(value.asJson)
           } yield response
-        case req @ GET -> Root / "winner"            =>
-          Ok()
-        case req @ POST -> Root / "lottey" / "close" =>
+        case req @ POST -> Root / "lottery" / "close" =>
+          service
+            .closeLotteries()
+            .flatMap(response => Ok(response.asJson))
+            .handleErrorWith(e => InternalServerError("An unexpected error occurred: " + e.getMessage))
+        case req @ GET -> Root / "winner"             =>
           Ok()
       }
   }
@@ -47,4 +47,7 @@ object LotteryRoutes {
   case class EntryResponse(
     entryId: Int,
   ) derives ConfiguredEncoder
+
+  case class WinnerResponse(lotteryId: Int, entryId: Int) derives ConfiguredEncoder
+  case class CloseResponse(winners: List[WinnerResponse]) derives ConfiguredEncoder
 }
