@@ -8,6 +8,7 @@ import route.LotteryRoutes.{CloseResponse, EntryRequest, EntryResponse, WinnerRe
 import service.ServiceError.ValidationError
 import cats.implicits.*
 import java.time.LocalDate
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 trait LotteryService {
   def submitEntry(request: EntryRequest): IO[Either[ValidationError, EntryResponse]]
@@ -15,21 +16,23 @@ trait LotteryService {
 }
 
 object LotteryService {
+  val invalidEntryErrorMessage = "This entry is not valid, either participant or lottery id does not exist."
 
   def apply(lotteryRepository: LotteryRepository, participantRepository: ParticipantRepository): LotteryService =
     new LotteryService {
-      val invalidEntryErrorMessage = "This entry is not valid, either participant or lottery id does not exist."
 
       def submitEntry(request: EntryRequest): IO[Either[ValidationError, EntryResponse]] = {
         val participantId = ParticipantId(request.participantId)
         val lotteryId     = LotteryId(request.lotteryId)
-        val entry         = Entry(participantId, lotteryId, Timestamp.now())
+        val entryTime     = Timestamp.now()
+        val entry         = Entry(participantId, lotteryId, entryTime)
 
         (for {
-          _ <- participantRepository.participantExists(participantId)
-          _ <- participantRepository.lotteryExists(lotteryId)
-          r <- OptionT.liftF(lotteryRepository.submitEntry(entry))
-        } yield Right(EntryResponse(r.toInt))).getOrElse(Left(ValidationError(invalidEntryErrorMessage)))
+          _       <- participantRepository.participantExists(participantId)
+          _       <- participantRepository.lotteryExists(lotteryId)
+          entryId <- OptionT.liftF(lotteryRepository.submitEntry(entry))
+        } yield Right(EntryResponse(entryId.toInt))).getOrElse(Left(ValidationError(invalidEntryErrorMessage)))
+      }
 
       override def closeLotteries(): IO[CloseResponse] = {
         for {

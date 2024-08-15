@@ -33,20 +33,21 @@ object ParticipantRepository {
       }
 
       override def participantExists(id: ParticipantId): OptionT[IO, Unit] = {
-        val query = sql"select count(*) from participant where id = ${id.toInt};"
+        val query = sql"SELECT count(*) FROM participant WHERE id = ${id.toInt};"
           .query[Int]
           .unique
           .map(_ > 0)
-        OptionT.liftF(query.transact(transactor).map(r => Option.when(r)(())))
+
+        OptionT(query.transact(transactor).map { r => Option.when(r)(()) })
       }
 
       override def lotteryExists(id: LotteryId): OptionT[IO, Unit] = {
-        val query = sql"select count(*) from lottery where id = ${id.toInt};"
+        val query = sql"SELECT count(*) FROM lottery WHERE id = ${id.toInt};"
           .query[Int]
           .unique
           .map(_ > 0)
 
-        OptionT.liftF(query.transact(transactor).map(r => Option.when(r)(())))
+        OptionT(query.transact(transactor).map(r => Option.when(r)(())))
       }
     }
 }
