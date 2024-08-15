@@ -4,10 +4,9 @@ services:
     image: bynder-lottery-via:0.1.0-SNAPSHOT
     ports:
       - "28080:8080"
-  bynder-lottery-db:
-    container_name: bynder-lottery-postgres
-    image: postgres:14.5
-    restart: always
+  bynder-lottery-timescaledb:
+    container_name: bynder-lottery-timescaledb
+    image: timescale/timescaledb:latest-pg14
     environment:
       POSTGRES_PASSWORD: titkos
     ports:

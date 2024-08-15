@@ -11,7 +11,7 @@ CREATE TABLE lottery (
 );
 
 CREATE TABLE entry (
-  id SERIAL PRIMARY KEY,
+  id SERIAL,
   entry_time TIMESTAMPTZ NOT NULL,
   participant_id INT NOT NULL,
   lottery_id INT NOT NULL,
@@ -29,3 +29,5 @@ CREATE TABLE winner (
 );
 
 INSERT INTO lottery (name) VALUES ('first and only lottery');
+
+SELECT create_hypertable('entry', 'entry_time', chunk_time_interval => INTERVAL '1 day');
