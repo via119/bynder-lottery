@@ -10,7 +10,6 @@ import doobie.implicits.*
 trait ParticipantRepository {
   def register(participant: Participant): IO[ParticipantId]
   def participantExists(id: ParticipantId): OptionT[IO, Unit]
-  def lotteryExists(id: LotteryId): OptionT[IO, Unit]
 }
 
 object ParticipantRepository {
@@ -39,15 +38,6 @@ object ParticipantRepository {
           .map(_ > 0)
 
         OptionT(query.transact(transactor).map { r => Option.when(r)(()) })
-      }
-
-      override def lotteryExists(id: LotteryId): OptionT[IO, Unit] = {
-        val query = sql"SELECT count(*) FROM lottery WHERE id = ${id.toInt};"
-          .query[Int]
-          .unique
-          .map(_ > 0)
-
-        OptionT(query.transact(transactor).map(r => Option.when(r)(())))
       }
     }
 }

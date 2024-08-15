@@ -2,13 +2,13 @@ package service
 
 import cats.data.OptionT
 import cats.effect.IO
-import domain.{Entry, LotteryId, ParticipantId, Timestamp, Winner}
+import cats.implicits.*
+import domain.{Entry, LotteryId, ParticipantId, Timestamp}
 import repository.{LotteryRepository, ParticipantRepository}
 import route.LotteryRoutes.{CloseResponse, EntryRequest, EntryResponse, WinnerResponse}
 import service.ServiceError.ValidationError
-import cats.implicits.*
+
 import java.time.LocalDate
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 trait LotteryService {
   def submitEntry(request: EntryRequest): IO[Either[ValidationError, EntryResponse]]
@@ -16,7 +16,7 @@ trait LotteryService {
 }
 
 object LotteryService {
-  val invalidEntryErrorMessage = "This entry is not valid, either participant or lottery id does not exist."
+  val invalidEntryErrorMessage = "This entry is not valid, either participant or lottery does not exist or lottery is not active."
 
   def apply(lotteryRepository: LotteryRepository, participantRepository: ParticipantRepository): LotteryService =
     new LotteryService {
@@ -29,17 +29,18 @@ object LotteryService {
 
         (for {
           _       <- participantRepository.participantExists(participantId)
-          _       <- participantRepository.lotteryExists(lotteryId)
+          _       <- lotteryRepository.isLotteryActive(lotteryId)
           entryId <- OptionT.liftF(lotteryRepository.submitEntry(entry))
         } yield Right(EntryResponse(entryId.toInt))).getOrElse(Left(ValidationError(invalidEntryErrorMessage)))
       }
 
       override def closeLotteries(): IO[CloseResponse] = {
         for {
-          lotteries <- lotteryRepository.getLotteries()
+          lotteries <- lotteryRepository.getActiveLotteries()
           today      = LocalDate.now()
           winners   <- lotteries.map(lotteryId => lotteryRepository.chooseWinner(lotteryId, today)).sequence.map(_.flatten)
           _         <- winners.map(winner => lotteryRepository.saveWinner(winner, today)).sequence
+          _         <- winners.map(winner => lotteryRepository.closeLottery(winner.lotteryId)).sequence
         } yield CloseResponse(winners.map(winner => WinnerResponse(winner.lotteryId.toInt, winner.entryId.toInt)))
       }
     }

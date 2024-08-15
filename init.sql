@@ -7,7 +7,8 @@ CREATE TABLE participant (
 
 CREATE TABLE lottery (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
+  name VARCHAR(255) NOT NULL,
+  active BOOLEAN
 );
 
 CREATE TABLE entry (
@@ -26,6 +27,6 @@ CREATE TABLE winner (
   entry_id INT NOT NULL
 );
 
-INSERT INTO lottery (name) VALUES ('first and only lottery');
+INSERT INTO lottery (name, active) VALUES ('first lottery', TRUE);
 
 SELECT create_hypertable('entry', 'entry_time', chunk_time_interval => INTERVAL '1 day');
