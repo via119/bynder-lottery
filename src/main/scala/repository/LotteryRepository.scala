@@ -3,7 +3,7 @@ package repository
 import cats.data.OptionT
 import cats.effect.IO
 import config.SqlServerConfig
-import domain.{Entry, EntryId, LotteryId, Winner}
+import domain.{Entry, EntryId, Lottery, LotteryId, LotteryName, Winner}
 import doobie.Transactor
 import doobie.implicits.*
 import doobie.implicits.javatimedrivernative.*
@@ -18,6 +18,8 @@ trait LotteryRepository {
   def closeLottery(lotteryId: LotteryId): IO[Unit]
   def saveWinner(winner: Winner, winDate: LocalDate): IO[Unit]
   def getWinners(date: LocalDate): IO[List[Winner]]
+  def createLottery(lotteryName: LotteryName): IO[LotteryId]
+  def getLotteries(): IO[List[Lottery]]
 }
 
 object LotteryRepository {
@@ -82,6 +84,20 @@ object LotteryRepository {
             .query[(Int, Int)]
             .to[List]
         query.transact(transactor).map(_.map { case (lotteryId, entryId) => Winner(LotteryId(lotteryId), EntryId(entryId)) })
+      }
+
+      override def createLottery(lotteryName: LotteryName): IO[LotteryId] = {
+        val query =
+          sql"INSERT INTO lottery (name, active) VALUES (${lotteryName.toString}, TRUE);".update.withUniqueGeneratedKeys[Int]("id")
+        query.transact(transactor).map(id => LotteryId(id))
+      }
+
+      override def getLotteries(): IO[List[Lottery]] = {
+        val query =
+          sql"SELECT id, name, active FROM lottery;"
+            .query[(Int, String, Boolean)]
+            .to[List]
+        query.transact(transactor).map(_.map { case (lotteryId, lotteryName, active) => Lottery(LotteryId(lotteryId), LotteryName(lotteryName), active) })
       }
     }
 }

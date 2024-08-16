@@ -7,8 +7,8 @@ import repository.{LotteryRepository, ParticipantRepository}
 import service.ServiceError.ValidationError
 import weaver.SimpleIOSuite
 import cats.implicits.*
-import domain.{Entry, EntryId, LotteryId, Participant, ParticipantId, Winner}
-import route.LotteryRoutes.{CloseResponse, EntryRequest, WinnerResponse}
+import domain.{Entry, EntryId, Lottery, LotteryId, LotteryName, Participant, ParticipantId, Winner}
+import route.LotteryRoutes.{CloseLotteryResponse, EntryRequest, WinnerResponse}
 import service.LotteryService.invalidEntryErrorMessage
 
 import java.time.LocalDate
@@ -41,6 +41,10 @@ object LotteryServiceTest extends SimpleIOSuite {
     override def isLotteryActive(id: LotteryId): OptionT[IO, Unit] = lotteryExistsResult
 
     override def getWinners(date: LocalDate): IO[List[Winner]] = IO.pure(Nil)
+
+    override def createLottery(lotteryName: LotteryName): IO[LotteryId] = IO.pure(lotteryId)
+
+    override def getLotteries(): IO[List[Lottery]] = IO.pure(Nil)
   }
 
   class TestParticipantRepository(participantExistsResult: OptionT[IO, Unit] = OptionT.none) extends ParticipantRepository {
@@ -86,7 +90,7 @@ object LotteryServiceTest extends SimpleIOSuite {
       winnersResultList         <- winnersRef.get
       closedLotteriesResultList <- closedLotteriesRef.get
     } yield expect(
-      winnersResultList == List(winner) && closedLotteriesResultList == List(lotteryId) && result == CloseResponse(
+      winnersResultList == List(winner) && closedLotteriesResultList == List(lotteryId) && result == CloseLotteryResponse(
         List(WinnerResponse(lotteryNumber, entryNumber)),
       ),
     )
@@ -106,7 +110,7 @@ object LotteryServiceTest extends SimpleIOSuite {
       result               <- lotteryService.closeLotteries()
       winnersResultList    <- winnersRef.get
     } yield expect(
-      winnersResultList.isEmpty && result == CloseResponse(Nil),
+      winnersResultList.isEmpty && result == CloseLotteryResponse(Nil),
     )
   }
 
@@ -124,7 +128,7 @@ object LotteryServiceTest extends SimpleIOSuite {
       result                    <- lotteryService.closeLotteries()
       closedLotteriesResultList <- closedLotteriesRef.get
     } yield expect(
-      closedLotteriesResultList == List(lotteryId) && result == CloseResponse(Nil),
+      closedLotteriesResultList == List(lotteryId) && result == CloseLotteryResponse(Nil),
     )
   }
 }
