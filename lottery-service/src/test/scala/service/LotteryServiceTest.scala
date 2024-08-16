@@ -3,13 +3,13 @@ package service
 import cats.data.OptionT
 import cats.effect.IO
 import cats.effect.kernel.Ref
-import repository.{LotteryRepository, ParticipantRepository}
-import service.ServiceError.ValidationError
-import weaver.SimpleIOSuite
 import cats.implicits.*
-import domain.{Entry, EntryId, Lottery, LotteryId, LotteryName, Participant, ParticipantId, Winner}
+import domain.*
+import repository.{LotteryRepository, ParticipantRepository}
 import route.LotteryRoutes.{CloseLotteryResponse, EntryRequest, WinnerResponse}
 import service.LotteryService.invalidEntryErrorMessage
+import service.ServiceError.ValidationError
+import weaver.SimpleIOSuite
 
 import java.time.LocalDate
 

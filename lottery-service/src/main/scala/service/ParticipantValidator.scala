@@ -1,10 +1,10 @@
 package service
 
+import cats.data.Validated.*
+import cats.data.*
+import cats.syntax.all.*
 import domain.Participant
 import route.ParticipantRoutes.RegisterParticipantRequest
-import cats.data.Validated._
-import cats.data._
-import cats.syntax.all._
 
 object ParticipantValidator {
 

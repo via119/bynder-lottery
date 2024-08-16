@@ -1,7 +1,0 @@
-curl -H "Content-Type: application/json" --data @data/create-participant.json -X POST http://localhost:28080/user
-
-curl -H "Content-Type: application/json" --data @data/invalid-participant.json -X POST http://localhost:28080/user
-
-psql -h localhost -p 25432 -U postgres
-
-curl -H "Content-Type: application/json" --data @data/entry.json -X POST http://localhost:28080/entry

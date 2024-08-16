@@ -3,12 +3,12 @@ package service
 import cats.data.OptionT
 import cats.effect.IO
 import cats.implicits.*
-import domain.{Entry, LotteryId, LotteryName, ParticipantId, Timestamp}
+import domain.*
 import repository.{LotteryRepository, ParticipantRepository}
 import route.LotteryRoutes.*
 import service.ServiceError.ValidationError
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 
 trait LotteryService {
   def submitEntry(request: EntryRequest): IO[Either[ValidationError, EntryResponse]]
@@ -27,7 +27,7 @@ object LotteryService {
       def submitEntry(request: EntryRequest): IO[Either[ValidationError, EntryResponse]] = {
         val participantId = ParticipantId(request.participantId)
         val lotteryId     = LotteryId(request.lotteryId)
-        val entryTime     = Timestamp.now()
+        val entryTime     = LocalDateTime.now()
         val entry         = Entry(participantId, lotteryId, entryTime)
 
         (for {

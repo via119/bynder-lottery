@@ -3,7 +3,7 @@ package repository
 import cats.data.OptionT
 import cats.effect.IO
 import config.SqlServerConfig
-import domain.{Entry, EntryId, Lottery, LotteryId, LotteryName, Winner}
+import domain.*
 import doobie.Transactor
 import doobie.implicits.*
 import doobie.implicits.javatimedrivernative.*
@@ -46,7 +46,7 @@ object LotteryRepository {
 
       override def submitEntry(entry: Entry): IO[EntryId] = {
         val query =
-          sql"INSERT INTO entry (participant_id, lottery_id, entry_time) VALUES (${entry.participantId.toInt},${entry.lotteryId.toInt},${entry.entryTime.toLocalDateTime});".update
+          sql"INSERT INTO entry (participant_id, lottery_id, entry_time) VALUES (${entry.participantId.toInt},${entry.lotteryId.toInt},${entry.entryTime});".update
             .withUniqueGeneratedKeys[Int]("id")
         query.transact(transactor).map(id => EntryId(id))
       }
