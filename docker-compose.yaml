@@ -13,3 +13,7 @@ services:
       - "25432:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  cron-service:
+    build: close_lotteries/.
+    container_name: bynder-lottery-cron-service
+    restart: always
