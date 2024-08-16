@@ -26,6 +26,7 @@ object LotteryServiceTest extends SimpleIOSuite {
     chooseWinnerResult: Option[Winner] = None,
     savedWinners: Option[Ref[IO, List[Winner]]] = None,
     closedLotteries: Option[Ref[IO, List[LotteryId]]] = None,
+    lotteryExistsResult: OptionT[IO, Unit] = OptionT.none,
   ) extends LotteryRepository {
     override def submitEntry(entry: Entry): IO[EntryId] = IO.pure(entryId)
 
@@ -36,20 +37,19 @@ object LotteryServiceTest extends SimpleIOSuite {
     override def closeLottery(lotteryId: LotteryId): IO[Unit] = closedLotteries.map(_.getAndUpdate(x => lotteryId :: x)).sequence.as(())
 
     override def saveWinner(winner: Winner, winDate: LocalDate): IO[Unit] = savedWinners.map(_.getAndUpdate(x => winner :: x)).sequence.as(())
+
+    override def isLotteryActive(id: LotteryId): OptionT[IO, Unit] = lotteryExistsResult
   }
 
-  class TestParticipantRepository(participantExistsResult: OptionT[IO, Unit] = OptionT.none, lotteryExistsResult: OptionT[IO, Unit] = OptionT.none)
-      extends ParticipantRepository {
+  class TestParticipantRepository(participantExistsResult: OptionT[IO, Unit] = OptionT.none) extends ParticipantRepository {
     override def register(participant: Participant): IO[ParticipantId] = ???
 
     override def participantExists(id: ParticipantId): OptionT[IO, Unit] = participantExistsResult
-
-    override def lotteryExists(id: LotteryId): OptionT[IO, Unit] = lotteryExistsResult
   }
 
   test("submitEntry should return ValidationError if user does not exist") {
-    val testLotteryRepository     = TestLotteryRepository()
-    val testParticipantRepository = TestParticipantRepository(participantExistsResult = OptionT.none, lotteryExistsResult = OptionT.some(()))
+    val testLotteryRepository     = TestLotteryRepository(lotteryExistsResult = OptionT.some(()))
+    val testParticipantRepository = TestParticipantRepository(participantExistsResult = OptionT.none)
     val lotteryService            = LotteryService(testLotteryRepository, testParticipantRepository)
 
     for {
@@ -58,8 +58,8 @@ object LotteryServiceTest extends SimpleIOSuite {
   }
 
   test("submitEntry should return ValidationError if lottery does not exist") {
-    val testLotteryRepository     = TestLotteryRepository()
-    val testParticipantRepository = TestParticipantRepository(participantExistsResult = OptionT.some(()), lotteryExistsResult = OptionT.none)
+    val testLotteryRepository     = TestLotteryRepository(lotteryExistsResult = OptionT.none)
+    val testParticipantRepository = TestParticipantRepository(participantExistsResult = OptionT.some(()))
     val lotteryService            = LotteryService(testLotteryRepository, testParticipantRepository)
 
     for {
