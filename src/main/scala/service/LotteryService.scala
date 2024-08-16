@@ -40,7 +40,7 @@ object LotteryService {
           today      = LocalDate.now()
           winners   <- lotteries.map(lotteryId => lotteryRepository.chooseWinner(lotteryId, today)).sequence.map(_.flatten)
           _         <- winners.map(winner => lotteryRepository.saveWinner(winner, today)).sequence
-          _         <- winners.map(winner => lotteryRepository.closeLottery(winner.lotteryId)).sequence
+          _         <- lotteries.map(lottery => lotteryRepository.closeLottery(lottery)).sequence
         } yield CloseResponse(winners.map(winner => WinnerResponse(winner.lotteryId.toInt, winner.entryId.toInt)))
       }
     }

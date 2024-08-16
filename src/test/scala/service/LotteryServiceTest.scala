@@ -90,23 +90,39 @@ object LotteryServiceTest extends SimpleIOSuite {
     )
   }
 
-  test("closeLotteries should not save winner and close lottery if a winner was not chosen") {
+  test("closeLotteries should not save winner if a winner was not chosen") {
     val testParticipantRepository = TestParticipantRepository()
     for {
-      winnersRef                <- Ref[IO].of(Nil: List[Winner])
-      closedLotteriesRef        <- Ref[IO].of(Nil: List[LotteryId])
-      testLotteryRepository      =
+      winnersRef           <- Ref[IO].of(Nil: List[Winner])
+      testLotteryRepository =
         TestLotteryRepository(
           lotteryList = List(lotteryId),
           chooseWinnerResult = None,
           savedWinners = Some(winnersRef),
         )
+      lotteryService        = LotteryService(testLotteryRepository, testParticipantRepository)
+      result               <- lotteryService.closeLotteries()
+      winnersResultList    <- winnersRef.get
+    } yield expect(
+      winnersResultList.isEmpty && result == CloseResponse(Nil),
+    )
+  }
+
+  test("closeLotteries should close lottery even if no winners were chosen") {
+    val testParticipantRepository = TestParticipantRepository()
+    for {
+      closedLotteriesRef        <- Ref[IO].of(Nil: List[LotteryId])
+      testLotteryRepository      =
+        TestLotteryRepository(
+          lotteryList = List(lotteryId),
+          chooseWinnerResult = None,
+          closedLotteries = Some(closedLotteriesRef),
+        )
       lotteryService             = LotteryService(testLotteryRepository, testParticipantRepository)
       result                    <- lotteryService.closeLotteries()
-      winnersResultList         <- winnersRef.get
       closedLotteriesResultList <- closedLotteriesRef.get
     } yield expect(
-      winnersResultList.isEmpty && closedLotteriesResultList.isEmpty && result == CloseResponse(Nil),
+      closedLotteriesResultList == List(lotteryId) && result == CloseResponse(Nil),
     )
   }
 }
