@@ -12,6 +12,8 @@ import org.http4s.dsl.Http4sDsl
 import service.LotteryService
 import service.ServiceError.{UnexpectedError, ValidationError}
 
+import java.time.LocalDate
+
 object LotteryRoutes {
   def routes(service: LotteryService): HttpRoutes[IO] = {
     val dsl = new Http4sDsl[IO] {}
@@ -33,7 +35,11 @@ object LotteryRoutes {
             .flatMap(response => Ok(response.asJson))
             .handleErrorWith(e => InternalServerError("An unexpected error occurred: " + e.getMessage))
         case req @ GET -> Root / "winner"             =>
-          Ok()
+          (for {
+            request  <- req.as[WinnersRequest]
+            result   <- service.getWinner(request)
+            response <- Ok(result.asJson)
+          } yield response).handleErrorWith(e => InternalServerError("An unexpected error occurred: " + e.getMessage))
       }
   }
 
@@ -49,5 +55,9 @@ object LotteryRoutes {
   ) derives ConfiguredEncoder
 
   case class WinnerResponse(lotteryId: Int, entryId: Int) derives ConfiguredEncoder
+
   case class CloseResponse(winners: List[WinnerResponse]) derives ConfiguredEncoder
+
+  case class WinnersRequest(date: LocalDate) derives ConfiguredDecoder
+  case class WinnersResponse(winners: List[WinnerResponse]) derives ConfiguredEncoder
 }

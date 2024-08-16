@@ -17,6 +17,7 @@ trait LotteryRepository {
   def chooseWinner(lotteryId: LotteryId, date: LocalDate): IO[Option[Winner]]
   def closeLottery(lotteryId: LotteryId): IO[Unit]
   def saveWinner(winner: Winner, winDate: LocalDate): IO[Unit]
+  def getWinners(date: LocalDate): IO[List[Winner]]
 }
 
 object LotteryRepository {
@@ -58,7 +59,7 @@ object LotteryRepository {
 
       override def chooseWinner(lotteryId: LotteryId, date: LocalDate): IO[Option[Winner]] = {
         val query =
-          sql"SELECT lottery_id, id FROM entry WHERE entry_time::date = $date ORDER BY random() LIMIT 1;"
+          sql"SELECT lottery_id, id FROM entry WHERE entry_time::date = $date AND lottery_id = ${lotteryId.toInt} ORDER BY random() LIMIT 1;"
             .query[(Int, Int)]
             .option
         query.transact(transactor).map(_.map { case (lotteryId, entryId) => Winner(LotteryId(lotteryId), EntryId(entryId)) })
@@ -73,6 +74,14 @@ object LotteryRepository {
         val query =
           sql"INSERT INTO winner (win_date, entry_id, lottery_id) VALUES ($winDate,${winner.entryId.toInt},${winner.lotteryId.toInt});".update.run
         query.transact(transactor).map(_ => ())
+      }
+
+      override def getWinners(date: LocalDate): IO[List[Winner]] = {
+        val query =
+          sql"SELECT lottery_id, entry_id FROM winner WHERE win_date = $date;"
+            .query[(Int, Int)]
+            .to[List]
+        query.transact(transactor).map(_.map { case (lotteryId, entryId) => Winner(LotteryId(lotteryId), EntryId(entryId)) })
       }
     }
 }

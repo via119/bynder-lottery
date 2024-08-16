@@ -39,6 +39,8 @@ object LotteryServiceTest extends SimpleIOSuite {
     override def saveWinner(winner: Winner, winDate: LocalDate): IO[Unit] = savedWinners.map(_.getAndUpdate(x => winner :: x)).sequence.as(())
 
     override def isLotteryActive(id: LotteryId): OptionT[IO, Unit] = lotteryExistsResult
+
+    override def getWinners(date: LocalDate): IO[List[Winner]] = IO.pure(Nil)
   }
 
   class TestParticipantRepository(participantExistsResult: OptionT[IO, Unit] = OptionT.none) extends ParticipantRepository {
