@@ -27,6 +27,8 @@ lazy val lotteryService = project
       circeCore,
       circeGeneric,
       circeParser,
+      log4Cats,
+      logback,
       scalaTest,
       weaver,
     ),
@@ -55,6 +57,8 @@ lazy val http4sBlazeCirce     = "org.http4s"            %% "http4s-circe"       
 lazy val circeCore            = "io.circe"              %% "circe-core"             % "0.14.7"
 lazy val circeGeneric         = "io.circe"              %% "circe-generic"          % circeCore.revision
 lazy val circeParser          = "io.circe"              %% "circe-parser"           % circeCore.revision
+lazy val log4Cats             = "org.typelevel"         %% "log4cats-slf4j"         % "2.7.0"
+lazy val logback              = "ch.qos.logback"         % "logback-classic"        % "1.3.0"
 
 lazy val scalaTest             = "org.scalatest"       %% "scalatest"                       % "3.2.19" % Test
 lazy val weaver                = "com.disneystreaming" %% "weaver-cats"                     % "0.8.4"  % Test
