@@ -1,6 +1,5 @@
 package route
 
-import cats.data.EitherT
 import cats.effect.IO
 import io.circe.derivation.*
 import io.circe.syntax.*
@@ -59,22 +58,22 @@ object LotteryRoutes {
   case class EntryRequest(
     participantId: Int,
     lotteryId: Int,
-  ) derives ConfiguredDecoder, ConfiguredEncoder
+  ) derives ConfiguredEncoder, ConfiguredDecoder
 
   case class EntryResponse(
     entryId: Int,
-  ) derives ConfiguredEncoder
+  ) derives ConfiguredEncoder, ConfiguredDecoder
 
-  case class WinnerResponse(lotteryId: Int, entryId: Int) derives ConfiguredEncoder
+  case class WinnerResponse(lotteryId: Int, entryId: Int) derives ConfiguredEncoder, ConfiguredDecoder
 
-  case class CloseLotteryResponse(winners: List[WinnerResponse]) derives ConfiguredEncoder
+  case class CloseLotteryResponse(winners: List[WinnerResponse]) derives ConfiguredEncoder, ConfiguredDecoder
 
-  case class WinnersRequest(date: LocalDate) derives ConfiguredDecoder
-  case class WinnersResponse(winners: List[WinnerResponse]) derives ConfiguredEncoder
+  case class WinnersRequest(date: LocalDate) derives ConfiguredEncoder, ConfiguredDecoder
+  case class WinnersResponse(winners: List[WinnerResponse]) derives ConfiguredEncoder, ConfiguredDecoder
 
-  case class CreateLotteryRequest(name: String) derives ConfiguredDecoder
-  case class CreateLotteryResponse(lotteryId: Int) derives ConfiguredEncoder
+  case class CreateLotteryRequest(name: String) derives ConfiguredEncoder, ConfiguredDecoder
+  case class CreateLotteryResponse(lotteryId: Int) derives ConfiguredEncoder, ConfiguredDecoder
 
-  case class LotteryResponse(id: Int, name: String, active: Boolean) derives ConfiguredEncoder
-  case class GetLotteriesResponse(lotteries: List[LotteryResponse]) derives ConfiguredEncoder
+  case class LotteryResponse(id: Int, name: String, active: Boolean) derives ConfiguredEncoder, ConfiguredDecoder
+  case class LotteriesResponse(lotteries: List[LotteryResponse]) derives ConfiguredEncoder, ConfiguredDecoder
 }

@@ -23,7 +23,7 @@ object ParticipantRoutesTest extends SimpleIOSuite {
   test("should return OK for correct request") {
     for {
       status <- ParticipantRoutes
-                  .routes(new TestService(IO.pure(Right(RegisterParticipantResponse(1)))))
+                  .routes(TestService(IO.pure(Right(RegisterParticipantResponse(1)))))
                   .run(Request[IO](Method.POST, uri"/user").withEntity(registerParticipantRequest))
                   .map(_.status)
                   .value
@@ -33,7 +33,7 @@ object ParticipantRoutesTest extends SimpleIOSuite {
   test("should return BadRequest for invalid request") {
     for {
       status <- ParticipantRoutes
-                  .routes(new TestService(IO.pure(Left(ValidationError("error")))))
+                  .routes(TestService(IO.pure(Left(ValidationError("error")))))
                   .run(Request[IO](Method.POST, uri"/user").withEntity(registerParticipantRequest))
                   .map(_.status)
                   .value
@@ -43,7 +43,7 @@ object ParticipantRoutesTest extends SimpleIOSuite {
   test("should return Internal Server Error for unexpected failures") {
     for {
       status <- ParticipantRoutes
-                  .routes(new TestService(IO.raiseError(new Throwable("error"))))
+                  .routes(TestService(IO.raiseError(Throwable("error"))))
                   .run(Request[IO](Method.POST, uri"/user").withEntity(registerParticipantRequest))
                   .map(_.status)
                   .value

@@ -34,11 +34,13 @@ lazy val lotteryService = project
 
 lazy val lotteryServiceIntegrationTest = project
   .in(file("lottery-service-integration-test"))
+  .dependsOn(lotteryService)
   .settings(
     name                 := "lottery-service-integration-test",
     testFrameworks       += new TestFramework("weaver.framework.CatsEffect"),
     libraryDependencies ++= Seq(
       weaver,
+      postgresTestContainer,
     ),
   )
 
@@ -54,5 +56,6 @@ lazy val circeCore            = "io.circe"              %% "circe-core"         
 lazy val circeGeneric         = "io.circe"              %% "circe-generic"          % circeCore.revision
 lazy val circeParser          = "io.circe"              %% "circe-parser"           % circeCore.revision
 
-val scalaTest = "org.scalatest"       %% "scalatest"   % "3.2.19" % Test
-val weaver    = "com.disneystreaming" %% "weaver-cats" % "0.8.4"  % Test
+lazy val scalaTest             = "org.scalatest"       %% "scalatest"                       % "3.2.19" % Test
+lazy val weaver                = "com.disneystreaming" %% "weaver-cats"                     % "0.8.4"  % Test
+lazy val postgresTestContainer = "com.dimafeng"        %% "testcontainers-scala-postgresql" % "0.41.4" % Test

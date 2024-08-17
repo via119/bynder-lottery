@@ -15,7 +15,7 @@ trait LotteryService {
   def closeLotteries(): IO[CloseLotteryResponse]
   def getWinner(request: WinnersRequest): IO[WinnersResponse]
   def createLottery(request: CreateLotteryRequest): IO[CreateLotteryResponse]
-  def getLotteries(): IO[GetLotteriesResponse]
+  def getLotteries(): IO[LotteriesResponse]
 }
 
 object LotteryService {
@@ -59,11 +59,11 @@ object LotteryService {
         } yield CreateLotteryResponse(lotteryId.toInt)
       }
 
-      override def getLotteries(): IO[GetLotteriesResponse] = {
+      override def getLotteries(): IO[LotteriesResponse] = {
         for {
           lotteries <- lotteryRepository.getLotteries()
           responses  = lotteries.map(l => LotteryResponse(id = l.id.toInt, name = l.name.toString, active = l.active))
-        } yield GetLotteriesResponse(responses)
+        } yield LotteriesResponse(responses)
       }
     }
 }
